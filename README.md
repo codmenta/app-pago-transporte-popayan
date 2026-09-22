@@ -35,6 +35,7 @@ de movilidad para la planificacion del servicio.
 - Formik (manejo de formularios)
 - Yup (validacion de datos)
 - Expo Vector Icons (iconos)
+- AsyncStorage (almacenamiento local: sesion, usuarios y billetera)
 - JavaScript / Node.js
 
 ================================================================
@@ -73,6 +74,7 @@ PASO 2: Instalar dependencias principales
 
 PASO 3: Instalar dependencias de Expo
 
+  npx expo install @react-native-async-storage/async-storage
   npx expo install @react-navigation/native @react-navigation/native-stack
   npx expo install react-native-screens react-native-safe-area-context
   npx expo install @expo/vector-icons
@@ -119,7 +121,20 @@ app-pago-transporte-popayan/
 |   |   |-- RechargeScreen.js Recarga de saldo
 |   |
 |   |-- navigation/           Configuracion de rutas
-|       |-- AppNavigator.js   Navegador principal
+|   |   |-- AppNavigator.js   Navegador principal
+|   |
+|   |-- context/              Estado global de la app (React Context)
+|   |   |-- AuthContext.js    Sesion del pasajero: login, registro, logout
+|   |
+|   |-- services/             Acceso a datos (hace de backend por ahora)
+|   |   |-- storage.js        Usuarios, sesion y billetera en AsyncStorage
+|   |
+|   |-- utils/                Funciones y validaciones reutilizables
+|   |   |-- validationSchemas.js  Esquemas Yup de los formularios
+|   |   |-- formatCurrency.js     Formato de moneda (COP) y fechas
+|   |
+|   |-- constants/            Valores compartidos por las pantallas
+|       |-- theme.js          Colores, espaciados y tamaños de fuente
 |
 |-- assets/                   Imagenes, iconos, fuentes
 |-- App.js                    Punto de entrada principal
@@ -127,6 +142,13 @@ app-pago-transporte-popayan/
 |-- package.json              Dependencias del proyecto
 |-- .gitignore                Archivos ignorados por Git
 |-- README.txt                Este archivo
+
+Nota: context/, services/, utils/ y constants/ no son obligatorias para
+que la app funcione (React Navigation solo necesita screens/ y
+navigation/). Se usan para no repetir la misma logica en varias
+pantallas: la sesion del usuario (context), el acceso a AsyncStorage
+(services), las validaciones de Formik/Yup (utils) y los colores del
+tema (constants).
 
 ================================================================
 7. SPRINT ACTUAL Y TAREAS ASIGNADAS
