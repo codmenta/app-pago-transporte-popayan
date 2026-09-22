@@ -1,6 +1,6 @@
 {
   "name": "app-pago-transporte-popayan",
-  "main": "App.js",
+  "main": "node_modules/expo/AppEntry.js",
   "version": "1.0.0",
   "dependencies": {
     "@expo/ui": "~57.0.19",
