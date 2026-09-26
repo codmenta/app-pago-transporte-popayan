@@ -77,7 +77,7 @@ const registrarUsuario = async (req, res) => {
 
     const usuarioCreado = nuevoUsuario.rows[0];
     
-    // 9. Inicializar billetera usando el 'correo' (compatible con el módulo de tu compañera)
+    // 9. Inicializar billetera usando el 'correo' 
     await pool.query(
       `INSERT INTO billetera (correo, saldo)
        VALUES ($1, $2) ON CONFLICT DO NOTHING`,
