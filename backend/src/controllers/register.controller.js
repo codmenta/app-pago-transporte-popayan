@@ -1,4 +1,4 @@
-const db = require('../db');
+const pool = require('../db');
 
 const registrarUsuario = async (req, res) => {
   const { fullName, email, phone, password } = req.body;
@@ -9,6 +9,7 @@ const registrarUsuario = async (req, res) => {
       message: 'Todos los campos (nombre, correo, celular y contraseña) son obligatorios.'
     });
   }
+
   // 2. Validar que no contengan únicamente espacios en blanco
   if (
     fullName.trim() === '' ||
@@ -20,12 +21,14 @@ const registrarUsuario = async (req, res) => {
       message: 'Los campos no pueden estar vacíos.'
     });
   }
+
   // 3. Validar longitud del nombre completo
   if (fullName.trim().length < 3) {
     return res.status(400).json({
       message: 'El nombre completo debe tener al menos 3 caracteres.'
     });
   }
+
   // 4. Validar formato de correo electrónico
   const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!regexEmail.test(email.trim())) {
@@ -33,6 +36,7 @@ const registrarUsuario = async (req, res) => {
       message: 'El correo electrónico no es válido.'
     });
   }
+
   // 5. Validar formato de teléfono celular (exactamente 10 dígitos)
   const regexPhone = /^[0-9]{10}$/;
   if (!regexPhone.test(phone.trim())) {
@@ -40,17 +44,21 @@ const registrarUsuario = async (req, res) => {
       message: 'El número de celular debe contener exactamente 10 dígitos numéricos.'
     });
   }
+
   // 6. Validar longitud mínima de la contraseña
   if (password.length < 6) {
     return res.status(400).json({
       message: 'La contraseña debe tener al menos 6 caracteres.'
     });
   }
+
+  const emailLimpio = email.toLowerCase().trim();
+
   try {
     // 7. Validar existencia del correo en la base de datos PostgreSQL
-    const usuarioExistente = await db.query(
+    const usuarioExistente = await pool.query(
       'SELECT id FROM usuarios WHERE email = $1',
-      [email.toLowerCase().trim()]
+      [emailLimpio]
     );
 
     if (usuarioExistente.rows.length > 0) {
@@ -58,21 +66,22 @@ const registrarUsuario = async (req, res) => {
         message: 'El correo electrónico ya se encuentra registrado.'
       });
     }
-    // 8. Inserción en la tabla 'usuarios' con contraseña en texto plano (sin cifrado)
-    const nuevoUsuario = await db.query(
+
+    // 8. Inserción en la tabla 'usuarios'
+    const nuevoUsuario = await pool.query(
       `INSERT INTO usuarios (nombre_completo, email, telefono, password)
        VALUES ($1, $2, $3, $4)
        RETURNING id, nombre_completo, email, telefono`,
-      [fullName.trim(), email.toLowerCase().trim(), phone.trim(), password]
+      [fullName.trim(), emailLimpio, phone.trim(), password]
     );
 
     const usuarioCreado = nuevoUsuario.rows[0];
     
-    // 9. Inicialización de la billetera del usuario con saldo 0
-    await db.query(
-      `INSERT INTO billetera (usuario_id, saldo)
+    // 9. Inicializar billetera usando el 'correo' (compatible con el módulo de tu compañera)
+    await pool.query(
+      `INSERT INTO billetera (correo, saldo)
        VALUES ($1, $2) ON CONFLICT DO NOTHING`,
-      [usuarioCreado.id, 0]
+      [emailLimpio, 0]
     );
 
     return res.status(201).json({
