@@ -9,7 +9,7 @@ async function login(req, res) {
 
   try {
     const result = await pool.query(
-      'SELECT correo, nombre, celular, contrasena FROM usuarios WHERE correo = $1',
+      'SELECT correo, nombre, celular, contrasena, rol FROM usuarios WHERE correo = $1', // agregado: rol
       [email.toLowerCase()]
     );
 
@@ -27,6 +27,7 @@ async function login(req, res) {
       email: usuario.correo,
       fullName: usuario.nombre,
       phone: usuario.celular,
+      role: usuario.rol, // agregado
     });
   } catch (error) {
     console.error('Error en login:', error);

@@ -104,3 +104,35 @@ export async function addRecharge(email, amount) {
 
   return data;
 }
+  // Admin: registro de buses (con generacion de QR)
+export async function registerBus(placa, numeroInterno, ruta) {
+  const response = await fetch(`${API_URL}/buses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ placa, numero_interno: numeroInterno, ruta }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo registrar el bus');
+  }
+
+  return data; // { placa, numero_interno, ruta, codigo_qr, fecha_creacion, qrImage }
+}
+// Admin: registro de conductores
+export async function registerConductor(nombre, cedula, celular, correo, password) {
+  const response = await fetch(`${API_URL}/conductores`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nombre, cedula, celular, correo, password }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo registrar el conductor');
+  }
+
+  return data;
+}
