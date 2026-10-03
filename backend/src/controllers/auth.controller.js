@@ -1,4 +1,3 @@
-const bcrypt = require('bcryptjs');
 const pool = require('../db');
 
 async function login(req, res) {
@@ -19,9 +18,8 @@ async function login(req, res) {
     }
 
     const usuario = result.rows[0];
-    const passwordValida = await bcrypt.compare(password, usuario.contrasena);
 
-    if (!passwordValida) {
+    if (password !== usuario.contrasena) {
       return res.status(401).json({ mensaje: 'Correo o contraseña incorrectos' });
     }
 
