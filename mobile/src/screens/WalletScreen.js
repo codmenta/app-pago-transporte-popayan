@@ -64,6 +64,12 @@ export default function WalletScreen({ navigation }) {
         >
           <Text style={styles.rechargeButtonText}>Recargar saldo</Text>
         </TouchableOpacity>
+          <TouchableOpacity
+        style={{ marginTop: 16, padding: 12, alignItems: 'center' }}
+        onPress={() => navigation.navigate('BusRegister')}
+      >
+        <Text style={{ color: COLORS.primary, fontWeight: '600' }}>🚍 Ir a Registro de Buses (temporal)</Text>
+  </TouchableOpacity>
       </View>
 
       <Text style={styles.historyTitle}>Historial de movimientos</Text>

@@ -7,13 +7,14 @@ import LoginScreen from '../screens/LoginScreen';
 import RechargeScreen from '../screens/RechargeScreen';
 import RegisterScreen from '../screens/RegisterScreen';
 import WalletScreen from '../screens/WalletScreen';
+import BusRegisterScreen from '../screens/BusRegisterScreen';
+import ConductorRegisterScreen from '../screens/ConductorRegisterScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
   const { user, loading } = useAuth();
 
-  // Mientras se revisa si ya habia una sesion guardada en el celular
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -31,33 +32,29 @@ export default function AppNavigator() {
           headerTitleStyle: { fontWeight: '600' },
         }}
       >
-        {user ? (
-          // Pila de pantallas para un pasajero con sesion iniciada
+        {!user ? (
+          // Sin sesion iniciada
           <>
-            <Stack.Screen
-              name="Wallet"
-              component={WalletScreen}
-              options={{ title: 'Mi billetera' }}
-            />
-            <Stack.Screen
-              name="Recharge"
-              component={RechargeScreen}
-              options={{ title: 'Recargar saldo' }}
-            />
+            <Stack.Screen name="Login" component={LoginScreen} options={{ title: 'Iniciar sesion', headerShown: false }} />
+            <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Crear cuenta', headerShown: false }} />
+          </>
+        ) : user.role === 'admin' ? (
+          // Sesion de administrador
+          <>
+            <Stack.Screen name="BusRegister" component={BusRegisterScreen} options={{ title: 'Registrar bus' }} />
+            <Stack.Screen name="ConductorRegister" component={ConductorRegisterScreen} options={{ title: 'Registrar conductor' }} />
+  
+          </>
+        ) : user.role === 'conductor' ? (
+          // Sesion de conductor (pendiente de construir su dashboard)
+          <>
+            <Stack.Screen name="Wallet" component={WalletScreen} options={{ title: 'Panel de conductor (temporal)' }} />
           </>
         ) : (
-          // Pila de pantallas para un visitante sin sesion iniciada
+          // Sesion de pasajero (por defecto)
           <>
-            <Stack.Screen
-              name="Login"
-              component={LoginScreen}
-              options={{ title: 'Iniciar sesion', headerShown: false }}
-            />
-            <Stack.Screen
-              name="Register"
-              component={RegisterScreen}
-              options={{ title: 'Crear cuenta', headerShown: false }}
-            />
+            <Stack.Screen name="Wallet" component={WalletScreen} options={{ title: 'Mi billetera' }} />
+            <Stack.Screen name="Recharge" component={RechargeScreen} options={{ title: 'Recargar saldo' }} />
           </>
         )}
       </Stack.Navigator>

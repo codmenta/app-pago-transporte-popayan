@@ -10,17 +10,16 @@ export function AuthProvider({ children }) {
   // Al abrir la app, revisamos si ya habia una sesion guardada.
   useEffect(() => {
     async function restoreSession() {
-      const email = await storage.getCurrentUserEmail();
-      if (email) {
-        const foundUser = await storage.findUserByEmail(email);
-        setUser(foundUser || null);
+      const savedUser = await storage.getCurrentUser();
+      if (savedUser) {
+        setUser(savedUser);
       }
       setLoading(false);
     }
     restoreSession();
   }, []);
 
-  // SCRUM-11: Registro de pasajero
+  // SCRUM-11: Registro de pasajero (sigue simulado, lo conecta tu compañera)
   async function register({ fullName, email, phone, password }) {
     const existing = await storage.findUserByEmail(email);
     if (existing) {
@@ -31,13 +30,10 @@ export function AuthProvider({ children }) {
     return newUser;
   }
 
-  // SCRUM-15: Inicio de sesion de pasajero
+  // SCRUM-15: Inicio de sesion de pasajero (ahora contra el backend real)
   async function login({ email, password }) {
-    const foundUser = await storage.findUserByEmail(email);
-    if (!foundUser || foundUser.password !== password) {
-      throw new Error('Correo o contraseña incorrectos');
-    }
-    await storage.setCurrentUser(foundUser.email);
+    const foundUser = await storage.loginRequest(email, password);
+    await storage.setCurrentUser(foundUser);
     setUser(foundUser);
     return foundUser;
   }

@@ -1,16 +1,18 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Este servicio simula la capa de backend para el Sprint 1 usando
-// almacenamiento local (AsyncStorage). Cuando el equipo conecte una API
-// real, solo hay que reemplazar las funciones de este archivo: las
-// pantallas no necesitan cambiar.
+// Cambia esta IP por la de tu computador (la que te dio ipconfig, adaptador Wi-Fi)
+const API_URL = 'http://localhost:4000/api';
 
+// ----------------------------------------------------------------
+// Claves de AsyncStorage
+// ----------------------------------------------------------------
 const USERS_KEY = '@app_pago_transporte:users';
 const CURRENT_USER_KEY = '@app_pago_transporte:currentUser';
-const WALLET_PREFIX = '@app_pago_transporte:wallet:';
 
 // ----------------------------------------------------------------
 // Usuarios (SCRUM-11, SCRUM-15)
+// Esto sigue igual: el REGISTRO todavia lo maneja tu compañera con
+// AsyncStorage hasta que ella conecte su propio endpoint.
 // ----------------------------------------------------------------
 
 export async function getUsers() {
@@ -34,12 +36,18 @@ export async function findUserByEmail(email) {
   return users.find((u) => u.email.toLowerCase() === email.toLowerCase());
 }
 
-export async function setCurrentUser(email) {
-  await AsyncStorage.setItem(CURRENT_USER_KEY, email);
+// ----------------------------------------------------------------
+// Sesion actual (ahora guardamos el usuario completo que devuelve
+// el backend, no solo el email)
+// ----------------------------------------------------------------
+
+export async function setCurrentUser(user) {
+  await AsyncStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
 }
 
-export async function getCurrentUserEmail() {
-  return AsyncStorage.getItem(CURRENT_USER_KEY);
+export async function getCurrentUser() {
+  const raw = await AsyncStorage.getItem(CURRENT_USER_KEY);
+  return raw ? JSON.parse(raw) : null;
 }
 
 export async function clearCurrentUser() {
@@ -47,46 +55,84 @@ export async function clearCurrentUser() {
 }
 
 // ----------------------------------------------------------------
-// Billetera: saldo e historial (SCRUM-17, SCRUM-18, SCRUM-19)
+// Login real contra el backend (SCRUM-15)
+// ----------------------------------------------------------------
+
+export async function loginRequest(email, password) {
+  const response = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'Correo o contraseña incorrectos');
+  }
+
+  return data; // { email, fullName, phone }
+}
+
+// ----------------------------------------------------------------
+// Billetera real contra el backend (SCRUM-17, SCRUM-18, SCRUM-19)
 // ----------------------------------------------------------------
 
 export async function getWallet(email) {
-  try {
-    const raw = await AsyncStorage.getItem(WALLET_PREFIX + email);
-    if (raw) return JSON.parse(raw);
+  const response = await fetch(`${API_URL}/billetera/${email}`);
+  const data = await response.json();
 
-    // Billetera nueva: saldo inicial en cero y sin movimientos.
-    const emptyWallet = { balance: 0, movements: [] };
-    await AsyncStorage.setItem(WALLET_PREFIX + email, JSON.stringify(emptyWallet));
-    return emptyWallet;
-  } catch (error) {
-    console.error('Error leyendo la billetera', error);
-    return { balance: 0, movements: [] };
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo obtener la billetera');
   }
+
+  return data; // { balance, movements }
 }
 
-async function saveWallet(email, wallet) {
-  await AsyncStorage.setItem(WALLET_PREFIX + email, JSON.stringify(wallet));
-}
-
-// Simula una recarga: suma el monto al saldo y agrega un movimiento
-// al inicio del historial. Una API real reemplazaria esto por una
-// llamada a Nequi/DaviPlata en entorno sandbox.
 export async function addRecharge(email, amount) {
-  const wallet = await getWallet(email);
-  const movement = {
-    id: Date.now().toString(),
-    type: 'recarga',
-    amount,
-    date: new Date().toISOString(),
-    description: 'Recarga de saldo (simulada)',
-  };
+  const response = await fetch(`${API_URL}/recargar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ correo: email, monto: amount }),
+  });
 
-  const updatedWallet = {
-    balance: wallet.balance + amount,
-    movements: [movement, ...wallet.movements],
-  };
+  const data = await response.json();
 
-  await saveWallet(email, updatedWallet);
-  return updatedWallet;
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo procesar la recarga');
+  }
+
+  return data;
+}
+  // Admin: registro de buses (con generacion de QR)
+export async function registerBus(placa, numeroInterno, ruta) {
+  const response = await fetch(`${API_URL}/buses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ placa, numero_interno: numeroInterno, ruta }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo registrar el bus');
+  }
+
+  return data; // { placa, numero_interno, ruta, codigo_qr, fecha_creacion, qrImage }
+}
+// Admin: registro de conductores
+export async function registerConductor(nombre, cedula, celular, correo, password) {
+  const response = await fetch(`${API_URL}/conductores`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nombre, cedula, celular, correo, password }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo registrar el conductor');
+  }
+
+  return data;
 }
