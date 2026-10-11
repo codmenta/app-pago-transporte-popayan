@@ -19,8 +19,19 @@ services:
     env_file: .env
     depends_on:
       - db
+    expose:
+      - "4000"
+    networks:
+      - internal
+    restart: unless-stopped
+
+  frontend:
+    container_name: popapay-frontend
+    build: ./mobile
+    depends_on:
+      - backend
     ports:
-      - "127.0.0.1:8086:4000"
+      - "8086:80"
     networks:
       - internal
     restart: unless-stopped
