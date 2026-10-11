@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Cambia esta IP por la de tu computador (la que te dio ipconfig, adaptador Wi-Fi)
-const API_URL = 'http://localhost:4000/api';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 // ----------------------------------------------------------------
 // Claves de AsyncStorage
