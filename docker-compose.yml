@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: popapay-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - popapay_pgdata:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - internal
+    restart: unless-stopped
+
+  backend:
+    container_name: popapay-backend
+    build: ./backend
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:8086:4000"
+    networks:
+      - internal
+    restart: unless-stopped
+
+volumes:
+  popapay_pgdata:
+
+networks:
+  internal:
+    driver: bridge
