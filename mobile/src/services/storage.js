@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Cambia esta IP por la de tu computador (la que te dio ipconfig, adaptador Wi-Fi)
+// En produccion viene de EXPO_PUBLIC_API_URL (/api); en tu computador usa localhost
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000/api';
 
 // ----------------------------------------------------------------
@@ -10,9 +10,7 @@ const USERS_KEY = '@app_pago_transporte:users';
 const CURRENT_USER_KEY = '@app_pago_transporte:currentUser';
 
 // ----------------------------------------------------------------
-// Usuarios (SCRUM-11, SCRUM-15)
-// Esto sigue igual: el REGISTRO todavia lo maneja tu compañera con
-// AsyncStorage hasta que ella conecte su propio endpoint.
+// Usuarios locales (ya no los usa el registro, quedan por compatibilidad)
 // ----------------------------------------------------------------
 
 export async function getUsers() {
@@ -37,8 +35,7 @@ export async function findUserByEmail(email) {
 }
 
 // ----------------------------------------------------------------
-// Sesion actual (ahora guardamos el usuario completo que devuelve
-// el backend, no solo el email)
+// Sesion actual
 // ----------------------------------------------------------------
 
 export async function setCurrentUser(user) {
@@ -55,7 +52,7 @@ export async function clearCurrentUser() {
 }
 
 // ----------------------------------------------------------------
-// Login real contra el backend (SCRUM-15)
+// Login y registro contra el backend
 // ----------------------------------------------------------------
 
 export async function loginRequest(email, password) {
@@ -71,11 +68,27 @@ export async function loginRequest(email, password) {
     throw new Error(data.mensaje || 'Correo o contraseña incorrectos');
   }
 
-  return data; // { email, fullName, phone }
+  return data; // { email, fullName, phone, role }
+}
+
+export async function registerRequest({ fullName, email, phone, password }) {
+  const response = await fetch(`${API_URL}/registro`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fullName, email, phone, password }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo completar el registro');
+  }
+
+  return data;
 }
 
 // ----------------------------------------------------------------
-// Billetera real contra el backend (SCRUM-17, SCRUM-18, SCRUM-19)
+// Billetera contra el backend
 // ----------------------------------------------------------------
 
 export async function getWallet(email) {
@@ -104,7 +117,11 @@ export async function addRecharge(email, amount) {
 
   return data;
 }
-  // Admin: registro de buses (con generacion de QR)
+
+// ----------------------------------------------------------------
+// Admin: buses y conductores
+// ----------------------------------------------------------------
+
 export async function registerBus(placa, numeroInterno, ruta) {
   const response = await fetch(`${API_URL}/buses`, {
     method: 'POST',
@@ -120,7 +137,7 @@ export async function registerBus(placa, numeroInterno, ruta) {
 
   return data; // { placa, numero_interno, ruta, codigo_qr, fecha_creacion, qrImage }
 }
-// Admin: registro de conductores
+
 export async function registerConductor(nombre, cedula, celular, correo, password) {
   const response = await fetch(`${API_URL}/conductores`, {
     method: 'POST',

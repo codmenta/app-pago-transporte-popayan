@@ -19,15 +19,8 @@ export function AuthProvider({ children }) {
     restoreSession();
   }, []);
 
-  // SCRUM-11: Registro de pasajero (sigue simulado, lo conecta tu compañera)
-  async function register({ fullName, email, phone, password }) {
-    const existing = await storage.findUserByEmail(email);
-    if (existing) {
-      throw new Error('Ya existe una cuenta registrada con este correo');
-    }
-    const newUser = { fullName, email: email.trim().toLowerCase(), phone, password };
-    await storage.saveUser(newUser);
-    return newUser;
+    async function register({ fullName, email, phone, password }) {
+    return storage.registerRequest({ fullName, email, phone, password });
   }
 
   // SCRUM-15: Inicio de sesion de pasajero (ahora contra el backend real)
