@@ -153,3 +153,14 @@ export async function registerConductor(nombre, cedula, celular, correo, passwor
 
   return data;
 }
+// Conductor: turno activo (bus y ruta asignados)
+export async function getTurnoActivo(email) {
+  const response = await fetch(`${API_URL}/turnos/conductor/${email}`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo obtener el turno');
+  }
+
+  return data; // { placa_bus, numero_interno, ruta, fecha_inicio, fecha_fin, estado }
+}

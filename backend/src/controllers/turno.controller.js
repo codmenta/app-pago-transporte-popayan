@@ -24,8 +24,6 @@ async function createTurno(req, res) {
 }
 
 // GET /api/turnos
-// Trae los turnos combinando datos de usuarios y buses (sin llaves foraneas,
-// pero igual se puede unir con JOIN comparando los valores)
 async function getTurnos(req, res) {
   try {
     const result = await pool.query(
@@ -52,4 +50,38 @@ async function getTurnos(req, res) {
   }
 }
 
-module.exports = { createTurno, getTurnos };
+// GET /api/turnos/conductor/:correo
+// Devuelve el turno activo mas reciente de un conductor, con los datos de su bus
+async function getTurnoActivo(req, res) {
+  const { correo } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT
+         t.id,
+         t.placa_bus,
+         b.numero_interno,
+         b.ruta,
+         t.fecha_inicio,
+         t.fecha_fin,
+         t.estado
+       FROM turnos t
+       JOIN buses b ON b.placa = t.placa_bus
+       WHERE t.correo_conductor = $1 AND t.estado = 'activo'
+       ORDER BY t.fecha_inicio DESC
+       LIMIT 1`,
+      [correo.toLowerCase()]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'No tienes un turno activo asignado' });
+    }
+
+    return res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error obteniendo turno activo:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { createTurno, getTurnos, getTurnoActivo };

@@ -1,6 +1,6 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { COLORS } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
@@ -9,11 +9,18 @@ import RegisterScreen from '../screens/RegisterScreen';
 import WalletScreen from '../screens/WalletScreen';
 import BusRegisterScreen from '../screens/BusRegisterScreen';
 import ConductorRegisterScreen from '../screens/ConductorRegisterScreen';
+import ConductorHomeScreen from '../screens/ConductorHomeScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
+
+  const logoutButton = () => (
+    <TouchableOpacity onPress={logout}>
+      <Text style={{ color: COLORS.surface, fontWeight: '600' }}>Salir</Text>
+    </TouchableOpacity>
+  );
 
   if (loading) {
     return (
@@ -41,14 +48,26 @@ export default function AppNavigator() {
         ) : user.role === 'admin' ? (
           // Sesion de administrador
           <>
-            <Stack.Screen name="BusRegister" component={BusRegisterScreen} options={{ title: 'Registrar bus' }} />
-            <Stack.Screen name="ConductorRegister" component={ConductorRegisterScreen} options={{ title: 'Registrar conductor' }} />
-  
+            <Stack.Screen
+              name="BusRegister"
+              component={BusRegisterScreen}
+              options={{ title: 'Registrar bus', headerRight: logoutButton }}
+            />
+            <Stack.Screen
+              name="ConductorRegister"
+              component={ConductorRegisterScreen}
+              options={{ title: 'Registrar conductor', headerRight: logoutButton }}
+            />
           </>
         ) : user.role === 'conductor' ? (
           // Sesion de conductor (pendiente de construir su dashboard)
           <>
-            <Stack.Screen name="Wallet" component={WalletScreen} options={{ title: 'Panel de conductor (temporal)' }} />
+                      <Stack.Screen
+              name="ConductorHome"
+              component={ConductorHomeScreen}
+              options={{ title: 'Panel del conductor', headerRight: logoutButton }}
+            />
+            
           </>
         ) : (
           // Sesion de pasajero (por defecto)
