@@ -164,3 +164,78 @@ export async function getTurnoActivo(email) {
 
   return data; // { placa_bus, numero_interno, ruta, fecha_inicio, fecha_fin, estado }
 }
+
+// Admin: asignacion de turnos
+export async function getConductores() {
+  const response = await fetch(`${API_URL}/conductores`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudieron cargar los conductores');
+  }
+
+  return data; // [{ correo, nombre, celular, cedula }]
+}
+
+export async function getBuses() {
+  const response = await fetch(`${API_URL}/buses`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudieron cargar los buses');
+  }
+
+  return data; // [{ placa, numero_interno, ruta }]
+}
+
+export async function createTurno(correoConductor, placaBus, fechaInicio, fechaFin) {
+  const response = await fetch(`${API_URL}/turnos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      correo_conductor: correoConductor,
+      placa_bus: placaBus,
+      fecha_inicio: fechaInicio,
+      fecha_fin: fechaFin,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo asignar el turno');
+  }
+
+  return data;
+}
+export async function getTurnos() {
+  const response = await fetch(`${API_URL}/turnos`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudieron cargar los turnos');
+  }
+
+  return data; // [{ nombre_conductor, numero_interno, ruta, placa_bus, fecha, hora_inicio, hora_fin }]
+}
+export async function finalizarTurno(id) {
+  const response = await fetch(`${API_URL}/turnos/${id}/finalizar`, { method: 'PATCH' });
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo finalizar el turno');
+  }
+
+  return data;
+}
+
+export async function deleteTurno(id) {
+  const response = await fetch(`${API_URL}/turnos/${id}`, { method: 'DELETE' });
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo eliminar el turno');
+  }
+
+  return data;
+}
