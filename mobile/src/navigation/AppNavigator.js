@@ -10,6 +10,7 @@ import WalletScreen from '../screens/WalletScreen';
 import BusRegisterScreen from '../screens/BusRegisterScreen';
 import ConductorRegisterScreen from '../screens/ConductorRegisterScreen';
 import ConductorHomeScreen from '../screens/ConductorHomeScreen';
+import AsignarTurnoScreen from '../screens/AsignarTurnoScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -57,6 +58,11 @@ export default function AppNavigator() {
               name="ConductorRegister"
               component={ConductorRegisterScreen}
               options={{ title: 'Registrar conductor', headerRight: logoutButton }}
+            />
+               <Stack.Screen
+              name="AsignarTurno"
+              component={AsignarTurnoScreen}
+              options={{ title: 'Asignar turno', headerRight: logoutButton }}
             />
           </>
         ) : user.role === 'conductor' ? (

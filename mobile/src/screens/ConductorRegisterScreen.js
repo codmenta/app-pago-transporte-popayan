@@ -12,7 +12,7 @@ import {
 import * as storage from '../services/storage';
 import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
 
-export default function ConductorRegisterScreen() {
+  export default function ConductorRegisterScreen({ navigation })  {
   const [nombre, setNombre] = useState('');
   const [cedula, setCedula] = useState('');
   const [celular, setCelular] = useState('');
@@ -112,6 +112,12 @@ export default function ConductorRegisterScreen() {
           )}
         </TouchableOpacity>
       </View>
+         <TouchableOpacity
+     style={{ marginTop: 16, padding: 12, alignItems: 'center' }}
+     onPress={() => navigation.navigate('AsignarTurno')}
+   >
+     <Text style={{ color: COLORS.primary, fontWeight: '600' }}>🗓️ Ir a Asignación de Turnos</Text>
+   </TouchableOpacity>
     </ScrollView>
   );
 }
