@@ -9,6 +9,7 @@ import RegisterScreen from '../screens/RegisterScreen';
 import WalletScreen from '../screens/WalletScreen';
 import BusRegisterScreen from '../screens/BusRegisterScreen';
 import ConductorRegisterScreen from '../screens/ConductorRegisterScreen';
+import ConductorHomeScreen from '../screens/ConductorHomeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -61,11 +62,12 @@ export default function AppNavigator() {
         ) : user.role === 'conductor' ? (
           // Sesion de conductor (pendiente de construir su dashboard)
           <>
-            <Stack.Screen
-              name="Wallet"
-              component={WalletScreen}
-              options={{ title: 'Panel de conductor (temporal)', headerRight: logoutButton }}
+                      <Stack.Screen
+              name="ConductorHome"
+              component={ConductorHomeScreen}
+              options={{ title: 'Panel del conductor', headerRight: logoutButton }}
             />
+            
           </>
         ) : (
           // Sesion de pasajero (por defecto)
