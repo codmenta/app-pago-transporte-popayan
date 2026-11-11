@@ -52,4 +52,29 @@ async function getBuses(req, res) {
   }
 }
 
-module.exports = { createBus, getBuses };
+// GET /api/buses/:placa/qr
+// Vuelve a generar la imagen del QR de un bus ya registrado
+async function getBusQr(req, res) {
+  const placa = req.params.placa.toUpperCase();
+
+  try {
+    const result = await pool.query(
+      'SELECT placa, numero_interno, ruta, codigo_qr FROM buses WHERE placa = $1',
+      [placa]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ mensaje: 'No se encontro el bus' });
+    }
+
+    const bus = result.rows[0];
+    const qrImage = await QRCode.toDataURL(bus.codigo_qr);
+
+    return res.status(200).json({ ...bus, qrImage });
+  } catch (error) {
+    console.error('Error obteniendo QR del bus:', error);
+    return res.status(500).json({ mensaje: 'Error interno del servidor' });
+  }
+}
+
+module.exports = { createBus, getBuses, getBusQr };

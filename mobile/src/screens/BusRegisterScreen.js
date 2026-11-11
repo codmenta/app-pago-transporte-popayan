@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import * as storage from '../services/storage';
 import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
 
@@ -19,6 +20,42 @@ export default function BusRegisterScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [busCreado, setBusCreado] = useState(null);
+  const [buses, setBuses] = useState([]);
+  const [qrAbierto, setQrAbierto] = useState(null); // placa del bus cuyo QR se esta viendo
+  const [qrImagen, setQrImagen] = useState(null);
+  const [qrCargando, setQrCargando] = useState(false);
+
+  async function cargarBuses() {
+    try {
+      setBuses(await storage.getBuses());
+    } catch (e) {
+      // Si falla, la lista simplemente queda vacia
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      cargarBuses();
+    }, [])
+  );
+
+  async function toggleQr(placaBus) {
+    if (qrAbierto === placaBus) {
+      setQrAbierto(null);
+      return;
+    }
+    setQrAbierto(placaBus);
+    setQrImagen(null);
+    setQrCargando(true);
+    try {
+      const data = await storage.getBusQr(placaBus);
+      setQrImagen(data.qrImage);
+    } catch (e) {
+      setQrImagen(null);
+    } finally {
+      setQrCargando(false);
+    }
+  }
 
   async function handleCrearBus() {
     setError('');
@@ -35,6 +72,7 @@ export default function BusRegisterScreen({ navigation }) {
       setPlaca('');
       setNumeroInterno('');
       setRuta('');
+      cargarBuses();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -98,7 +136,45 @@ export default function BusRegisterScreen({ navigation }) {
           </View>
         </View>
       )}
-            <TouchableOpacity
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Buses registrados</Text>
+        {buses.length === 0 ? (
+          <Text style={styles.emptyText}>Aun no hay buses registrados.</Text>
+        ) : (
+          buses.map((b) => (
+            <View key={b.placa} style={styles.busRow}>
+              <View style={styles.busRowHeader}>
+                <View style={styles.busInfo}>
+                  <Text style={styles.busName}>Bus #{b.numero_interno} · {b.placa}</Text>
+                  <Text style={styles.busRoute}>{b.ruta}</Text>
+                </View>
+                <TouchableOpacity style={styles.qrButton} onPress={() => toggleQr(b.placa)}>
+                  <Text style={styles.qrButtonText}>
+                    {qrAbierto === b.placa ? 'Ocultar' : 'Ver QR'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {qrAbierto === b.placa && (
+                <View style={styles.qrPreview}>
+                  {qrCargando ? (
+                    <ActivityIndicator color={COLORS.primary} />
+                  ) : qrImagen ? (
+                    <>
+                      <Image source={{ uri: qrImagen }} style={styles.qrImage} />
+                      <Text style={styles.qrCode}>{b.codigo_qr}</Text>
+                    </>
+                  ) : (
+                    <Text style={styles.errorText}>No se pudo cargar el QR</Text>
+                  )}
+                </View>
+              )}
+            </View>
+          ))
+        )}
+      </View>
+
+      <TouchableOpacity
         style={{ marginTop: 16, padding: 12, alignItems: 'center' }}
         onPress={() => navigation.navigate('ConductorRegister')}
       >
@@ -173,6 +249,24 @@ const styles = StyleSheet.create({
     height: 180,
     marginBottom: SPACING.sm,
   },
+  emptyText: { fontSize: FONT_SIZES.sm, color: COLORS.textLight },
+  busRow: {
+    borderTopWidth: 1,
+    borderTopColor: '#EEEEEE',
+    paddingVertical: SPACING.sm,
+  },
+  busRowHeader: { flexDirection: 'row', alignItems: 'center' },
+  busInfo: { flex: 1 },
+  busName: { fontSize: FONT_SIZES.sm, fontWeight: '600', color: COLORS.text },
+  busRoute: { fontSize: FONT_SIZES.xs, color: COLORS.textLight, marginTop: 2 },
+  qrButton: {
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+  },
+  qrButtonText: { color: COLORS.primary, fontWeight: '600', fontSize: FONT_SIZES.sm },
   qrCode: {
     fontSize: FONT_SIZES.sm,
     color: COLORS.textLight,

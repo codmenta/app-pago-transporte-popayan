@@ -38,3 +38,13 @@ CREATE TABLE IF NOT EXISTS turnos (
     fecha_fin TIMESTAMP NOT NULL,
     estado VARCHAR(20) NOT NULL DEFAULT 'activo'
 );
+
+CREATE TABLE IF NOT EXISTS pagos (
+    id SERIAL PRIMARY KEY,
+    correo_pasajero VARCHAR(150) NOT NULL,
+    id_turno INTEGER NOT NULL,
+    placa_bus VARCHAR(10) NOT NULL,
+    correo_conductor VARCHAR(150) NOT NULL,
+    monto NUMERIC(10, 2) NOT NULL,
+    fecha TIMESTAMP DEFAULT NOW()
+);

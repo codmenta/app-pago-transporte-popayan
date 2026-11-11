@@ -32,16 +32,22 @@ export default function WalletScreen({ navigation }) {
   }
 
   function renderMovement({ item }) {
+    const esPago = item.type === 'pago';
     return (
       <View style={styles.movementRow}>
-        <View style={styles.movementIcon}>
-          <Text style={styles.movementIconText}>+</Text>
+        <View style={[styles.movementIcon, esPago && styles.movementIconPago]}>
+          <Text style={[styles.movementIconText, esPago && styles.movementTextPago]}>
+            {esPago ? '-' : '+'}
+          </Text>
         </View>
         <View style={styles.movementInfo}>
           <Text style={styles.movementDescription}>{item.description}</Text>
           <Text style={styles.movementDate}>{formatDate(item.date)}</Text>
         </View>
-        <Text style={styles.movementAmount}>{formatCurrency(item.amount)}</Text>
+        <Text style={[styles.movementAmount, esPago && styles.movementTextPago]}>
+          {esPago ? '- ' : ''}
+          {formatCurrency(item.amount)}
+        </Text>
       </View>
     );
   }
@@ -64,12 +70,12 @@ export default function WalletScreen({ navigation }) {
         >
           <Text style={styles.rechargeButtonText}>Recargar saldo</Text>
         </TouchableOpacity>
-          <TouchableOpacity
-        style={{ marginTop: 16, padding: 12, alignItems: 'center' }}
-        onPress={() => navigation.navigate('BusRegister')}
-      >
-        <Text style={{ color: COLORS.primary, fontWeight: '600' }}>🚍 Ir a Registro de Buses (temporal)</Text>
-  </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.rechargeButton, styles.payButton]}
+          onPress={() => navigation.navigate('Pay')}
+        >
+          <Text style={styles.payButtonText}>🚍 Pagar pasaje</Text>
+        </TouchableOpacity>
       </View>
 
       <Text style={styles.historyTitle}>Historial de movimientos</Text>
@@ -145,6 +151,23 @@ const styles = StyleSheet.create({
     color: COLORS.primaryDark,
     fontWeight: '700',
     fontSize: FONT_SIZES.md,
+  },
+  payButton: {
+    marginTop: SPACING.sm,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: COLORS.surface,
+  },
+  payButtonText: {
+    color: COLORS.surface,
+    fontWeight: '700',
+    fontSize: FONT_SIZES.md,
+  },
+  movementIconPago: {
+    backgroundColor: '#FDECEA',
+  },
+  movementTextPago: {
+    color: COLORS.error,
   },
   historyTitle: {
     fontSize: FONT_SIZES.md,

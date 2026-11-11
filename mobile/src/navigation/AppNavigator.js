@@ -11,6 +11,7 @@ import BusRegisterScreen from '../screens/BusRegisterScreen';
 import ConductorRegisterScreen from '../screens/ConductorRegisterScreen';
 import ConductorHomeScreen from '../screens/ConductorHomeScreen';
 import AsignarTurnoScreen from '../screens/AsignarTurnoScreen';
+import PayScreen from '../screens/PayScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -80,6 +81,7 @@ export default function AppNavigator() {
           <>
             <Stack.Screen name="Wallet" component={WalletScreen} options={{ title: 'Mi billetera' }} />
             <Stack.Screen name="Recharge" component={RechargeScreen} options={{ title: 'Recargar saldo' }} />
+            <Stack.Screen name="Pay" component={PayScreen} options={{ title: 'Pagar pasaje' }} />
           </>
         )}
       </Stack.Navigator>
