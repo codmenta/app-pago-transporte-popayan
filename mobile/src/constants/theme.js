@@ -1,12 +1,23 @@
+// Paleta de PopaPay: verde azulado (teal) como color de marca y ambar como acento,
+// los mismos colores del logo (assets/images/popapay-logo.svg).
 export const COLORS = {
-  primary: '#2F6F4E',
-  secondary: '#4CAF50',
-  background: '#F5F5F5',
+  primary: '#0F766E',
+  primaryDark: '#115E59',
+  primaryLight: '#E6F4F1',
+  secondary: '#14B8A6',
+  accent: '#F59E0B',
+  accentLight: '#FEF3C7',
+  background: '#F4F7F6',
   surface: '#FFFFFF',
-  text: '#333333',
-  textLight: '#999999',
-  error: '#E74C3C',
-  success: '#27AE60',
+  text: '#0F172A',
+  textLight: '#64748B',
+  border: '#E2E8F0',
+  disabled: '#94A3B8',
+  error: '#DC2626',
+  errorLight: '#FEE2E2',
+  success: '#16A34A',
+  successLight: '#DCFCE7',
+  onPrimaryMuted: '#CCEBE6',
 };
 
 export const SPACING = {
@@ -18,10 +29,11 @@ export const SPACING = {
 };
 
 export const RADIUS = {
-  sm: 4,
-  md: 8,
-  lg: 12,
-  xl: 16,
+  sm: 6,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  pill: 999,
 };
 
 export const FONT_SIZES = {
@@ -31,4 +43,13 @@ export const FONT_SIZES = {
   lg: 18,
   xl: 24,
   xxl: 32,
+};
+
+// Sombra suave para tarjetas (iOS, Android y web)
+export const SHADOW = {
+  shadowColor: '#0F172A',
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 3,
 };

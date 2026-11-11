@@ -1,20 +1,30 @@
 {
   "expo": {
-    "name": "app-pago-transporte-popayan",
+    "name": "PopaPay",
     "slug": "app-pago-transporte-popayan",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#F4F7F6",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE"
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png",
+        "backgroundColor": "#0F766E"
       }
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "name": "PopaPay",
+      "shortName": "PopaPay",
+      "description": "Paga tu pasaje de bus en Popayán desde el celular",
+      "favicon": "./assets/images/favicon.png",
+      "themeColor": "#0F766E",
+      "backgroundColor": "#F4F7F6"
     },
     "plugins": [
       [
@@ -25,7 +35,15 @@
       ],
       "expo-font",
       "expo-image",
-      "expo-splash-screen",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 160,
+          "resizeMode": "contain",
+          "backgroundColor": "#F4F7F6"
+        }
+      ],
       "expo-status-bar",
       "expo-web-browser"
     ]

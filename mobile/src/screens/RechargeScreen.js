@@ -1,21 +1,23 @@
+import { Ionicons } from '@expo/vector-icons';
+import { Formik } from 'formik';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
-  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
-import { Formik } from 'formik';
+import Button from '../components/Button';
+import Notice from '../components/Notice';
+import TextField from '../components/TextField';
+import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 import * as storage from '../services/storage';
-import { rechargeSchema } from '../utils/validationSchemas';
 import { formatCurrency } from '../utils/formatCurrency';
-import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
+import { rechargeSchema } from '../utils/validationSchemas';
 
 // Montos rapidos para agilizar la recarga (ajustables segun el negocio)
 const QUICK_AMOUNTS = [3000, 10000, 20000, 50000];
@@ -28,6 +30,7 @@ function simulatePaymentDelay() {
 export default function RechargeScreen({ navigation }) {
   const { user } = useAuth();
   const [rechargeError, setRechargeError] = useState('');
+  const [recargado, setRecargado] = useState(null);
 
   async function handleRecharge(values, { setSubmitting, resetForm }) {
     setRechargeError('');
@@ -35,11 +38,7 @@ export default function RechargeScreen({ navigation }) {
       await simulatePaymentDelay();
       await storage.addRecharge(user.email, Number(values.amount));
       resetForm();
-      Alert.alert(
-        'Recarga exitosa',
-        `Se agregaron ${formatCurrency(values.amount)} a tu saldo.`,
-        [{ text: 'Ver mi billetera', onPress: () => navigation.goBack() }]
-      );
+      setRecargado(Number(values.amount));
     } catch (error) {
       setRechargeError('No pudimos procesar la recarga. Intenta de nuevo.');
     } finally {
@@ -47,160 +46,160 @@ export default function RechargeScreen({ navigation }) {
     }
   }
 
+  // Confirmacion en pantalla (Alert.alert no funciona en la version web)
+  if (recargado !== null) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <View style={styles.successCard}>
+          <View style={styles.successIcon}>
+            <Ionicons name="checkmark" size={40} color={COLORS.surface} />
+          </View>
+          <Text style={styles.successTitle}>¡Recarga exitosa!</Text>
+          <Text style={styles.successAmount}>{formatCurrency(recargado)}</Text>
+          <Text style={styles.successText}>Ya está disponible en tu saldo.</Text>
+        </View>
+        <Button
+          title="Volver a mi billetera"
+          icon="wallet-outline"
+          onPress={() => navigation.goBack()}
+          style={styles.fullButton}
+        />
+        <Button
+          title="Hacer otra recarga"
+          variant="ghost"
+          onPress={() => setRecargado(null)}
+          style={styles.fullButton}
+        />
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.title}>Recargar saldo</Text>
-      <Text style={styles.subtitle}>
-        Esta recarga es simulada: no se realiza ningun cobro real. La
-        integracion con Nequi y DaviPlata se probara en entorno sandbox.
-      </Text>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <Formik
+          initialValues={{ amount: '' }}
+          validationSchema={rechargeSchema}
+          onSubmit={handleRecharge}
+        >
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isSubmitting, setFieldValue }) => (
+            <View>
+              <View style={styles.card}>
+                <Text style={styles.sectionTitle}>¿Cuánto quieres recargar?</Text>
+                <View style={styles.quickAmountsGrid}>
+                  {QUICK_AMOUNTS.map((amount) => {
+                    const active = Number(values.amount) === amount;
+                    return (
+                      <Pressable
+                        key={amount}
+                        style={[styles.chip, active && styles.chipActive]}
+                        onPress={() => setFieldValue('amount', String(amount))}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: active }}
+                      >
+                        <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                          {formatCurrency(amount)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
 
-      <Formik
-        initialValues={{ amount: '' }}
-        validationSchema={rechargeSchema}
-        onSubmit={handleRecharge}
-      >
-        {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isSubmitting, setFieldValue }) => (
-          <View style={styles.form}>
-            <Text style={styles.label}>Elige un monto</Text>
-            <View style={styles.quickAmountsRow}>
-              {QUICK_AMOUNTS.map((amount) => (
-                <TouchableOpacity
-                  key={amount}
-                  style={[
-                    styles.quickAmountChip,
-                    Number(values.amount) === amount && styles.quickAmountChipActive,
-                  ]}
-                  onPress={() => setFieldValue('amount', String(amount))}
-                >
-                  <Text
-                    style={[
-                      styles.quickAmountText,
-                      Number(values.amount) === amount && styles.quickAmountTextActive,
-                    ]}
-                  >
-                    {formatCurrency(amount)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                <TextField
+                  label="O escribe otro monto"
+                  icon="cash-outline"
+                  placeholder="Ej. 15000"
+                  keyboardType="numeric"
+                  onChangeText={handleChange('amount')}
+                  onBlur={handleBlur('amount')}
+                  value={values.amount}
+                  error={touched.amount && errors.amount}
+                />
+              </View>
+
+              <Notice
+                type="info"
+                message="Recarga simulada: no se realiza ningún cobro real. La integración con Nequi y DaviPlata se probará en entorno sandbox."
+              />
+              <Notice type="error" message={rechargeError} />
+
+              <Button
+                title={
+                  Number(values.amount) > 0
+                    ? `Recargar ${formatCurrency(Number(values.amount))}`
+                    : 'Confirmar recarga'
+                }
+                icon="add-circle-outline"
+                onPress={handleSubmit}
+                loading={isSubmitting}
+                style={styles.submit}
+              />
             </View>
-
-            <Text style={styles.label}>O ingresa otro monto</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ej. 15000"
-              placeholderTextColor={COLORS.textLight}
-              keyboardType="numeric"
-              onChangeText={handleChange('amount')}
-              onBlur={handleBlur('amount')}
-              value={values.amount}
-            />
-            {touched.amount && errors.amount && (
-              <Text style={styles.errorText}>{errors.amount}</Text>
-            )}
-
-            {rechargeError ? <Text style={styles.errorText}>{rechargeError}</Text> : null}
-
-            <TouchableOpacity
-              style={[styles.button, isSubmitting && styles.buttonDisabled]}
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color={COLORS.surface} />
-              ) : (
-                <Text style={styles.buttonText}>Confirmar recarga</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-      </Formik>
+          )}
+        </Formik>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
+  container: { flex: 1, backgroundColor: COLORS.background },
+  centered: { justifyContent: 'center', padding: SPACING.lg },
+  scroll: { padding: SPACING.md, paddingBottom: SPACING.xl },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
     padding: SPACING.lg,
+    ...SHADOW,
   },
-  title: {
-    fontSize: FONT_SIZES.xl,
+  sectionTitle: {
+    fontSize: FONT_SIZES.lg,
     fontWeight: '700',
     color: COLORS.text,
-    marginBottom: SPACING.xs,
-  },
-  subtitle: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textLight,
-    marginBottom: SPACING.lg,
-  },
-  form: {
     marginBottom: SPACING.md,
   },
-  label: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-    marginTop: SPACING.md,
-  },
-  quickAmountsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: SPACING.sm,
-  },
-  quickAmountChip: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.lg,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.surface,
-  },
-  quickAmountChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  quickAmountText: {
-    color: COLORS.text,
-    fontWeight: '600',
-    fontSize: FONT_SIZES.sm,
-  },
-  quickAmountTextActive: {
-    color: COLORS.surface,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm + 4,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text,
-  },
-  errorText: {
-    color: COLORS.error,
-    fontSize: FONT_SIZES.sm,
-    marginTop: SPACING.xs,
-  },
-  button: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.md,
-    paddingVertical: SPACING.md,
+  quickAmountsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
+  chip: {
+    flexGrow: 1,
+    flexBasis: '45%',
     alignItems: 'center',
-    marginTop: SPACING.lg,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md - 2,
+    backgroundColor: COLORS.surface,
   },
-  buttonDisabled: {
-    backgroundColor: COLORS.disabled,
+  chipActive: { backgroundColor: COLORS.primaryLight, borderColor: COLORS.primary },
+  chipText: { color: COLORS.text, fontWeight: '700', fontSize: FONT_SIZES.md },
+  chipTextActive: { color: COLORS.primaryDark },
+  submit: { marginTop: SPACING.lg },
+  successCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+    ...SHADOW,
   },
-  buttonText: {
-    color: COLORS.surface,
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
+  successIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: COLORS.success,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.md,
   },
+  successTitle: { fontSize: FONT_SIZES.lg, fontWeight: '700', color: COLORS.text },
+  successAmount: {
+    fontSize: FONT_SIZES.xxl,
+    fontWeight: '800',
+    color: COLORS.primary,
+    marginVertical: SPACING.sm,
+  },
+  successText: { fontSize: FONT_SIZES.sm, color: COLORS.textLight },
+  fullButton: { marginTop: SPACING.sm },
 });
