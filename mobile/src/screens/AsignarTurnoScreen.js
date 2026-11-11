@@ -1,18 +1,16 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import AdminTabs from '../components/AdminTabs';
+import Button from '../components/Button';
+import Notice from '../components/Notice';
+import RouteBadge from '../components/RouteBadge';
+import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import * as storage from '../services/storage';
-import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
 
 const TURNOS = [
-  { id: 'manana', label: 'Mañana · 06:00 - 14:00', horaInicio: 6, horaFin: 14 },
-  { id: 'tarde', label: 'Tarde · 14:00 - 22:00', horaInicio: 14, horaFin: 22 },
+  { id: 'manana', label: 'Mañana', horario: '06:00 - 14:00', icon: 'sunny-outline', horaInicio: 6, horaFin: 14 },
+  { id: 'tarde', label: 'Tarde', horario: '14:00 - 22:00', icon: 'moon-outline', horaInicio: 14, horaFin: 22 },
 ];
 
 // Arma una fecha de hoy con la hora dada, sin zona horaria (YYYY-MM-DDTHH:00:00)
@@ -124,191 +122,249 @@ export default function AsignarTurnoScreen() {
     );
   }
 
+  const listo = conductorSel && busSel && turnoSel;
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Asignación de Turnos</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+      <AdminTabs />
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>1. Conductor</Text>
+        <StepTitle n={1} title="Conductor" done={!!conductorSel} />
         {conductores.length === 0 && (
           <Text style={styles.emptyText}>Aún no hay conductores registrados.</Text>
         )}
         {conductores.map((c) => (
-          <TouchableOpacity
+          <Option
             key={c.correo}
-            style={[styles.option, conductorSel?.correo === c.correo && styles.optionSelected]}
+            icon="person-outline"
+            title={c.nombre}
+            subtitle={c.correo}
+            selected={conductorSel?.correo === c.correo}
             onPress={() => setConductorSel(c)}
-          >
-            <Text style={styles.optionTitle}>{c.nombre}</Text>
-            <Text style={styles.optionSub}>{c.correo}</Text>
-          </TouchableOpacity>
+          />
         ))}
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>2. Bus</Text>
-        {buses.length === 0 && (
-          <Text style={styles.emptyText}>Aún no hay buses registrados.</Text>
-        )}
+        <StepTitle n={2} title="Bus" done={!!busSel} />
+        {buses.length === 0 && <Text style={styles.emptyText}>Aún no hay buses registrados.</Text>}
         {buses.map((b) => (
-          <TouchableOpacity
+          <Option
             key={b.placa}
-            style={[styles.option, busSel?.placa === b.placa && styles.optionSelected]}
+            icon="bus-outline"
+            title={`Bus #${b.numero_interno}`}
+            subtitle={`Placa ${b.placa}`}
+            ruta={b.ruta}
+            selected={busSel?.placa === b.placa}
             onPress={() => setBusSel(b)}
-          >
-            <Text style={styles.optionTitle}>Bus #{b.numero_interno}</Text>
-            <Text style={styles.optionSub}>
-              {b.ruta} · {b.placa}
-            </Text>
-          </TouchableOpacity>
+          />
         ))}
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>3. Turno de hoy</Text>
-        {TURNOS.map((t) => (
-          <TouchableOpacity
-            key={t.id}
-            style={[styles.option, turnoSel === t.id && styles.optionSelected]}
-            onPress={() => setTurnoSel(t.id)}
-          >
-            <Text style={styles.optionTitle}>{t.label}</Text>
-          </TouchableOpacity>
-        ))}
+        <StepTitle n={3} title="Turno de hoy" done={!!turnoSel} />
+        <View style={styles.turnoGrid}>
+          {TURNOS.map((t) => {
+            const sel = turnoSel === t.id;
+            return (
+              <Pressable
+                key={t.id}
+                onPress={() => setTurnoSel(t.id)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: sel }}
+                style={[styles.turnoOption, sel && styles.optionSelected]}
+              >
+                <Ionicons name={t.icon} size={24} color={sel ? COLORS.primary : COLORS.textLight} />
+                <Text style={styles.optionTitle}>{t.label}</Text>
+                <Text style={styles.optionSub}>{t.horario}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-      {exito ? <Text style={styles.successText}>{exito}</Text> : null}
+      <Notice type="error" message={error} style={styles.noticeGap} />
+      <Notice type="success" message={exito} style={styles.noticeGap} />
 
-      <TouchableOpacity
-        style={[styles.button, saving && styles.buttonDisabled]}
+      <Button
+        title="Confirmar asignación"
+        icon="checkmark-circle-outline"
         onPress={handleConfirmar}
-        disabled={saving}
-      >
-        {saving ? (
-          <ActivityIndicator color={COLORS.surface} />
-        ) : (
-          <Text style={styles.buttonText}>✓ Confirmar asignación</Text>
-        )}
-      </TouchableOpacity>
+        loading={saving}
+        disabled={!listo}
+        style={styles.confirm}
+      />
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Turnos asignados</Text>
-        {turnos.length === 0 && (
-          <Text style={styles.emptyText}>Aún no hay turnos asignados.</Text>
-        )}
-        {turnos.map((t) => (
-          <View key={t.id} style={styles.turnoRow}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.optionTitle}>{t.nombre_conductor}</Text>
+        <View style={styles.titleRow}>
+          <Ionicons name="calendar" size={20} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Turnos asignados</Text>
+        </View>
+        {turnos.length === 0 && <Text style={styles.emptyText}>Aún no hay turnos asignados.</Text>}
+        {turnos.map((t) => {
+          const finalizado = t.estado === 'finalizado';
+          return (
+            <View key={t.id} style={styles.turnoRow}>
+              <View style={styles.turnoHeader}>
+                <Text style={[styles.optionTitle, styles.flex]}>{t.nombre_conductor}</Text>
+                <View style={[styles.badge, finalizado && styles.badgeDone]}>
+                  <Text style={[styles.badgeText, finalizado && styles.badgeTextDone]}>{t.estado}</Text>
+                </View>
+              </View>
               <Text style={styles.optionSub}>
-                Bus #{t.numero_interno} · {t.ruta} · {t.placa_bus}
+                Bus #{t.numero_interno} · {t.placa_bus}
               </Text>
+              <RouteBadge ruta={t.ruta} style={styles.routeBadge} />
               <Text style={styles.optionSub}>
                 {t.fecha} · {t.hora_inicio} - {t.hora_fin}
               </Text>
-            </View>
 
-            <View style={styles.actions}>
-              <Text style={[styles.badge, t.estado === 'finalizado' && styles.badgeDone]}>
-                {t.estado}
-              </Text>
-
-              {confirmarId === t.id ? (
-                <View style={styles.actionRow}>
-                  <TouchableOpacity onPress={() => handleEliminar(t.id)}>
-                    <Text style={styles.linkDanger}>Confirmar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setConfirmarId(null)}>
-                    <Text style={styles.link}>Cancelar</Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <View style={styles.actionRow}>
-                  {t.estado === 'activo' && (
-                    <TouchableOpacity onPress={() => handleFinalizar(t.id)}>
-                      <Text style={styles.link}>Finalizar</Text>
-                    </TouchableOpacity>
-                  )}
-                  <TouchableOpacity onPress={() => setConfirmarId(t.id)}>
-                    <Text style={styles.linkDanger}>Eliminar</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
+              <View style={styles.actionRow}>
+                {confirmarId === t.id ? (
+                  <>
+                    <Text style={styles.confirmText}>¿Eliminar este turno?</Text>
+                    <Button small variant="ghost" title="Cancelar" onPress={() => setConfirmarId(null)} />
+                    <Button small variant="danger" title="Eliminar" onPress={() => handleEliminar(t.id)} />
+                  </>
+                ) : (
+                  <>
+                    {t.estado === 'activo' && (
+                      <Button
+                        small
+                        variant="outline"
+                        icon="flag-outline"
+                        title="Finalizar"
+                        onPress={() => handleFinalizar(t.id)}
+                      />
+                    )}
+                    <Button
+                      small
+                      variant="dangerGhost"
+                      icon="trash-outline"
+                      title="Eliminar"
+                      onPress={() => setConfirmarId(t.id)}
+                    />
+                  </>
+                )}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </ScrollView>
   );
 }
 
+function StepTitle({ n, title, done }) {
+  return (
+    <View style={styles.titleRow}>
+      <View style={[styles.step, done && styles.stepDone]}>
+        {done ? (
+          <Ionicons name="checkmark" size={14} color={COLORS.surface} />
+        ) : (
+          <Text style={styles.stepText}>{n}</Text>
+        )}
+      </View>
+      <Text style={styles.cardTitle}>{title}</Text>
+    </View>
+  );
+}
+
+function Option({ icon, title, subtitle, ruta, selected, onPress }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      style={[styles.option, selected && styles.optionSelected]}
+    >
+      <Ionicons name={icon} size={20} color={selected ? COLORS.primary : COLORS.textLight} />
+      <View style={styles.flex}>
+        <Text style={styles.optionTitle}>{title}</Text>
+        <Text style={styles.optionSub}>{subtitle}</Text>
+        {ruta ? <RouteBadge ruta={ruta} style={styles.routeBadge} /> : null}
+      </View>
+      <Ionicons
+        name={selected ? 'radio-button-on' : 'radio-button-off'}
+        size={22}
+        color={selected ? COLORS.primary : COLORS.border}
+      />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, padding: SPACING.lg },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  title: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { padding: SPACING.md, paddingBottom: SPACING.xl },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.background },
+  flex: { flex: 1 },
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
+    ...SHADOW,
   },
-  cardTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm, marginBottom: SPACING.sm + 2 },
+  cardTitle: { fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.text },
+  step: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepDone: { backgroundColor: COLORS.success },
+  stepText: { color: COLORS.primary, fontWeight: '800', fontSize: FONT_SIZES.xs },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md - 4,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md - 4,
     marginBottom: SPACING.sm,
   },
-  option: {
+  optionSelected: { borderColor: COLORS.primary, backgroundColor: COLORS.primaryLight },
+  optionTitle: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.text },
+  optionSub: { fontSize: FONT_SIZES.sm, color: COLORS.textLight, marginTop: 2 },
+  turnoGrid: { flexDirection: 'row', gap: SPACING.sm },
+  turnoOption: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
     borderWidth: 1.5,
     borderColor: COLORS.border,
     borderRadius: RADIUS.md,
     padding: SPACING.md,
-    marginBottom: SPACING.sm,
   },
-  optionSelected: {
-    borderColor: COLORS.primary,
-    backgroundColor: '#eff6ff',
-  },
-  optionTitle: { fontSize: FONT_SIZES.md, fontWeight: '600', color: COLORS.text },
-  optionSub: { fontSize: FONT_SIZES.sm, color: COLORS.textLight, marginTop: 2 },
   emptyText: { fontSize: FONT_SIZES.sm, color: COLORS.textLight },
-  errorText: { color: COLORS.error, fontSize: FONT_SIZES.sm, marginBottom: SPACING.sm },
-  successText: { color: '#166534', fontSize: FONT_SIZES.sm, marginBottom: SPACING.sm },
-  button: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.md,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-    marginBottom: SPACING.lg,
-  },
-  buttonDisabled: { backgroundColor: COLORS.disabled },
-  buttonText: { color: COLORS.surface, fontSize: FONT_SIZES.md, fontWeight: '600' },
+  routeBadge: { marginTop: 6 },
+  noticeGap: { marginTop: 0, marginBottom: SPACING.md },
+  confirm: { marginBottom: SPACING.lg },
   turnoRow: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    paddingVertical: SPACING.md - 4,
+  },
+  turnoHeader: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    paddingVertical: SPACING.sm,
+    justifyContent: 'flex-end',
+    gap: SPACING.sm,
+    marginTop: SPACING.sm,
   },
-  actions: { alignItems: 'flex-end', gap: 6 },
-  actionRow: { flexDirection: 'row', gap: 12 },
+  confirmText: { flex: 1, fontSize: FONT_SIZES.sm, color: COLORS.error, fontWeight: '600' },
   badge: {
-    backgroundColor: '#fef3c7',
-    color: '#92400e',
-    fontSize: FONT_SIZES.sm,
-    fontWeight: '600',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-    borderRadius: RADIUS.md,
-    overflow: 'hidden',
+    backgroundColor: COLORS.accentLight,
+    paddingHorizontal: SPACING.sm + 2,
+    paddingVertical: 3,
+    borderRadius: RADIUS.pill,
   },
-  badgeDone: { backgroundColor: '#dcfce7', color: '#166534' },
-  link: { color: COLORS.primary, fontSize: FONT_SIZES.sm, fontWeight: '600' },
-  linkDanger: { color: COLORS.error, fontSize: FONT_SIZES.sm, fontWeight: '600' },
+  badgeDone: { backgroundColor: COLORS.successLight },
+  badgeText: { color: '#92400E', fontSize: FONT_SIZES.xs, fontWeight: '700', textTransform: 'capitalize' },
+  badgeTextDone: { color: '#166534' },
 });

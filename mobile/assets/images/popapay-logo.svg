@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- PopaPay: frente de bus + moneda con check (pago confirmado) -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1E40AF"/>
+    </linearGradient>
+  </defs>
+
+  <rect id="fondo" width="1024" height="1024" rx="230" fill="url(#bg)"/>
+
+  <g id="marca">
+    <!-- Bus -->
+    <g transform="translate(232 200)">
+      <rect x="40" y="540" width="120" height="90" rx="32" fill="#172554"/>
+      <rect x="360" y="540" width="120" height="90" rx="32" fill="#172554"/>
+      <rect x="0" y="0" width="520" height="580" rx="110" fill="#FFFFFF"/>
+      <rect x="160" y="48" width="200" height="36" rx="18" fill="#1E40AF" opacity="0.25"/>
+      <rect x="55" y="120" width="410" height="230" rx="54" fill="#1E40AF"/>
+      <path d="M95 320 L250 150 L330 150 L175 320 Z" fill="#FFFFFF" opacity="0.14"/>
+      <circle cx="125" cy="455" r="44" fill="#F59E0B"/>
+      <circle cx="395" cy="455" r="44" fill="#F59E0B"/>
+      <rect x="200" y="438" width="120" height="34" rx="17" fill="#1E40AF" opacity="0.25"/>
+    </g>
+
+    <!-- Moneda con check -->
+    <circle cx="810" cy="230" r="115" fill="#F59E0B" stroke="#FFFFFF" stroke-width="28"/>
+    <path d="M757 232 L793 268 L862 196" fill="none" stroke="#FFFFFF" stroke-width="32"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

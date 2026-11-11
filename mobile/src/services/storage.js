@@ -188,6 +188,18 @@ export async function getBuses() {
   return data; // [{ placa, numero_interno, ruta }]
 }
 
+// Admin: volver a ver el QR de un bus ya registrado
+export async function getBusQr(placa) {
+  const response = await fetch(`${API_URL}/buses/${encodeURIComponent(placa)}/qr`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo obtener el QR del bus');
+  }
+
+  return data; // { placa, numero_interno, ruta, codigo_qr, qrImage }
+}
+
 export async function createTurno(correoConductor, placaBus, fechaInicio, fechaFin) {
   const response = await fetch(`${API_URL}/turnos`, {
     method: 'POST',
@@ -238,4 +250,47 @@ export async function deleteTurno(id) {
   }
 
   return data;
+}
+// ----------------------------------------------------------------
+// Pagos de pasaje
+// ----------------------------------------------------------------
+
+export async function getTarifa() {
+  const response = await fetch(`${API_URL}/tarifa`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo obtener la tarifa');
+  }
+
+  return data.tarifa;
+}
+
+// "bus" puede ser el numero interno del bus o el codigo de su QR
+export async function pagarPasaje(email, bus) {
+  const response = await fetch(`${API_URL}/pagar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ correo: email, bus }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudo realizar el pago');
+  }
+
+  return data; // { balance, pago, movement }
+}
+
+// Conductor: pagos recibidos en su turno activo
+export async function getPagosConductor(email) {
+  const response = await fetch(`${API_URL}/pagos/conductor/${email}`);
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.mensaje || 'No se pudieron cargar los pagos');
+  }
+
+  return data; // { id_turno, total_pasajeros, total_recaudado, pagos: [{ id, monto, fecha, nombre_pasajero }] }
 }

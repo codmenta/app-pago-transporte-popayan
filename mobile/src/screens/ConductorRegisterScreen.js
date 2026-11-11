@@ -1,18 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  ScrollView,
-  Alert,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import AdminTabs from '../components/AdminTabs';
+import Button from '../components/Button';
+import Notice from '../components/Notice';
+import TextField from '../components/TextField';
+import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import * as storage from '../services/storage';
-import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
 
-  export default function ConductorRegisterScreen({ navigation })  {
+export default function ConductorRegisterScreen() {
   const [nombre, setNombre] = useState('');
   const [cedula, setCedula] = useState('');
   const [celular, setCelular] = useState('');
@@ -20,9 +16,11 @@ import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [exito, setExito] = useState('');
 
   async function handleCrearConductor() {
     setError('');
+    setExito('');
 
     if (!nombre || !cedula || !celular || !correo || !password) {
       setError('Completa todos los campos');
@@ -32,7 +30,8 @@ import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
     setLoading(true);
     try {
       await storage.registerConductor(nombre, cedula, celular, correo, password);
-      Alert.alert('Conductor registrado', `Se creo la cuenta de ${nombre} correctamente.`);
+      // Mensaje en pantalla (Alert.alert no funciona en la version web)
+      setExito(`Se creó la cuenta de ${nombre}. Ya puede iniciar sesión con ${correo}.`);
       setNombre('');
       setCedula('');
       setCelular('');
@@ -46,135 +45,83 @@ import { COLORS, SPACING, RADIUS, FONT_SIZES } from '../constants/theme';
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Registro de Conductores</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
+      <AdminTabs />
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Datos del conductor</Text>
+        <View style={styles.cardTitleRow}>
+          <Ionicons name="person-add" size={20} color={COLORS.primary} />
+          <Text style={styles.cardTitle}>Datos del conductor</Text>
+        </View>
 
-        <Text style={styles.label}>Nombre completo</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ej: Juan Perez Lopez"
-          placeholderTextColor={COLORS.textLight}
+        <TextField
+          label="Nombre completo"
+          icon="person-outline"
+          placeholder="Ej: Juan Pérez López"
           value={nombre}
           onChangeText={setNombre}
         />
-
-        <Text style={styles.label}>Cedula / Documento</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Cédula / Documento"
+          icon="id-card-outline"
           placeholder="1234567890"
-          placeholderTextColor={COLORS.textLight}
           value={cedula}
           onChangeText={setCedula}
           keyboardType="numeric"
         />
-
-        <Text style={styles.label}>Telefono</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Teléfono"
+          icon="call-outline"
           placeholder="3001234567"
-          placeholderTextColor={COLORS.textLight}
           value={celular}
           onChangeText={setCelular}
           keyboardType="phone-pad"
+          maxLength={10}
         />
-
-        <Text style={styles.label}>Correo electronico</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Correo electrónico"
+          icon="mail-outline"
           placeholder="conductor@popapay.com"
-          placeholderTextColor={COLORS.textLight}
           autoCapitalize="none"
           keyboardType="email-address"
           value={correo}
           onChangeText={setCorreo}
         />
-
-        <Text style={styles.label}>Contraseña temporal</Text>
-        <TextInput
-          style={styles.input}
+        <TextField
+          label="Contraseña temporal"
+          icon="lock-closed-outline"
           placeholder="••••••••"
-          placeholderTextColor={COLORS.textLight}
           secureTextEntry
           value={password}
           onChangeText={setPassword}
         />
 
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        <Notice type="error" message={error} />
+        <Notice type="success" message={exito} />
 
-        <TouchableOpacity style={styles.button} onPress={handleCrearConductor} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color={COLORS.surface} />
-          ) : (
-            <Text style={styles.buttonText}>✓ Registrar conductor</Text>
-          )}
-        </TouchableOpacity>
+        <Button
+          title="Registrar conductor"
+          icon="checkmark-circle-outline"
+          onPress={handleCrearConductor}
+          loading={loading}
+          style={styles.mt}
+        />
       </View>
-         <TouchableOpacity
-     style={{ marginTop: 16, padding: 12, alignItems: 'center' }}
-     onPress={() => navigation.navigate('AsignarTurno')}
-   >
-     <Text style={{ color: COLORS.primary, fontWeight: '600' }}>🗓️ Ir a Asignación de Turnos</Text>
-   </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    padding: SPACING.lg,
-  },
-  title: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: '700',
-    color: COLORS.text,
-    marginBottom: SPACING.md,
-  },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  scroll: { padding: SPACING.md, paddingBottom: SPACING.xl },
+  mt: { marginTop: SPACING.lg },
   card: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
     marginBottom: SPACING.md,
+    ...SHADOW,
   },
-  cardTitle: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-  },
-  label: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.text,
-    marginBottom: SPACING.xs,
-    marginTop: SPACING.sm,
-  },
-  input: {
-    backgroundColor: COLORS.background,
-    borderRadius: RADIUS.md,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm + 4,
-    fontSize: FONT_SIZES.md,
-    color: COLORS.text,
-  },
-  errorText: {
-    color: COLORS.error,
-    fontSize: FONT_SIZES.sm,
-    marginTop: SPACING.sm,
-  },
-  button: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.md,
-    paddingVertical: SPACING.md,
-    alignItems: 'center',
-    marginTop: SPACING.lg,
-  },
-  buttonText: {
-    color: COLORS.surface,
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-  },
+  cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: SPACING.sm },
+  cardTitle: { fontSize: FONT_SIZES.md, fontWeight: '700', color: COLORS.text },
 });
