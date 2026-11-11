@@ -1,13 +1,15 @@
-// Paleta de PopaPay: verde azulado (teal) como color de marca y ambar como acento,
-// los mismos colores del logo (assets/images/popapay-logo.svg).
+// Paleta de PopaPay (psicologia del color para transporte + pagos):
+// - Azul: confianza y seguridad (bancos, billeteras, sistemas de transporte).
+// - Ambar: atencion y movimiento (buses, señalizacion); solo en acciones clave.
+// Son los mismos colores del logo (assets/images/popapay-logo.svg).
 export const COLORS = {
-  primary: '#0F766E',
-  primaryDark: '#115E59',
-  primaryLight: '#E6F4F1',
-  secondary: '#14B8A6',
+  primary: '#1E40AF',
+  primaryDark: '#1E3A8A',
+  primaryLight: '#EAF0FF',
+  secondary: '#3B82F6',
   accent: '#F59E0B',
   accentLight: '#FEF3C7',
-  background: '#F4F7F6',
+  background: '#F4F6FB',
   surface: '#FFFFFF',
   text: '#0F172A',
   textLight: '#64748B',
@@ -17,7 +19,15 @@ export const COLORS = {
   errorLight: '#FEE2E2',
   success: '#16A34A',
   successLight: '#DCFCE7',
-  onPrimaryMuted: '#CCEBE6',
+  onPrimaryMuted: '#C7D5FB',
+};
+
+// Colores de cada empresa de transporte, usados solo como etiqueta de la ruta
+// (ver src/components/RouteBadge.js). La marca PopaPay es neutral y sirve para todas.
+export const ROUTE_COLORS = {
+  transpubenza: { bg: '#1D4ED8', fg: '#FFFFFF', dot: '#FACC15' }, // azul y amarillo
+  rapidotambo: { bg: '#15803D', fg: '#FFFFFF', dot: '#FFFFFF' }, // verde y blanco
+  sotracauca: { bg: '#4B5563', fg: '#FFFFFF', dot: '#EF4444' }, // gris y rojo
 };
 
 export const SPACING = {

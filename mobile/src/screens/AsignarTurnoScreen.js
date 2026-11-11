@@ -4,6 +4,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import AdminTabs from '../components/AdminTabs';
 import Button from '../components/Button';
 import Notice from '../components/Notice';
+import RouteBadge from '../components/RouteBadge';
 import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import * as storage from '../services/storage';
 
@@ -152,7 +153,8 @@ export default function AsignarTurnoScreen() {
             key={b.placa}
             icon="bus-outline"
             title={`Bus #${b.numero_interno}`}
-            subtitle={`${b.ruta} · ${b.placa}`}
+            subtitle={`Placa ${b.placa}`}
+            ruta={b.ruta}
             selected={busSel?.placa === b.placa}
             onPress={() => setBusSel(b)}
           />
@@ -210,8 +212,9 @@ export default function AsignarTurnoScreen() {
                 </View>
               </View>
               <Text style={styles.optionSub}>
-                Bus #{t.numero_interno} · {t.ruta} · {t.placa_bus}
+                Bus #{t.numero_interno} · {t.placa_bus}
               </Text>
+              <RouteBadge ruta={t.ruta} style={styles.routeBadge} />
               <Text style={styles.optionSub}>
                 {t.fecha} · {t.hora_inicio} - {t.hora_fin}
               </Text>
@@ -267,7 +270,7 @@ function StepTitle({ n, title, done }) {
   );
 }
 
-function Option({ icon, title, subtitle, selected, onPress }) {
+function Option({ icon, title, subtitle, ruta, selected, onPress }) {
   return (
     <Pressable
       onPress={onPress}
@@ -279,6 +282,7 @@ function Option({ icon, title, subtitle, selected, onPress }) {
       <View style={styles.flex}>
         <Text style={styles.optionTitle}>{title}</Text>
         <Text style={styles.optionSub}>{subtitle}</Text>
+        {ruta ? <RouteBadge ruta={ruta} style={styles.routeBadge} /> : null}
       </View>
       <Ionicons
         name={selected ? 'radio-button-on' : 'radio-button-off'}
@@ -337,6 +341,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
   },
   emptyText: { fontSize: FONT_SIZES.sm, color: COLORS.textLight },
+  routeBadge: { marginTop: 6 },
   noticeGap: { marginTop: 0, marginBottom: SPACING.md },
   confirm: { marginBottom: SPACING.lg },
   turnoRow: {

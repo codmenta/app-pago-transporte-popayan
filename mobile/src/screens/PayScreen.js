@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import Button from '../components/Button';
 import Notice from '../components/Notice';
+import RouteBadge from '../components/RouteBadge';
 import TextField from '../components/TextField';
 import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
@@ -126,7 +127,13 @@ export default function PayScreen({ navigation }) {
           <View style={styles.divider} />
 
           <ReceiptRow icon="bus-outline" label="Bus" value={`#${recibo.numero_interno} · ${recibo.placa_bus}`} />
-          <ReceiptRow icon="map-outline" label="Ruta" value={recibo.ruta} />
+          <View style={styles.receiptRow}>
+            <Ionicons name="map-outline" size={18} color={COLORS.textLight} />
+            <Text style={styles.receiptLabel}>Ruta</Text>
+            <View style={styles.flexEnd}>
+              <RouteBadge ruta={recibo.ruta} />
+            </View>
+          </View>
           <ReceiptRow icon="person-outline" label="Conductor" value={recibo.nombre_conductor} />
           <ReceiptRow icon="time-outline" label="Fecha" value={formatDate(recibo.fecha)} />
           <ReceiptRow icon="wallet-outline" label="Saldo restante" value={formatCurrency(recibo.balance)} />
@@ -226,6 +233,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   scroll: { padding: SPACING.md, paddingBottom: SPACING.xl },
   flex: { flex: 1 },
+  flexEnd: { flex: 1, alignItems: 'flex-end' },
   mt: { marginTop: SPACING.md },
   noTop: { marginTop: 0 },
   pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },

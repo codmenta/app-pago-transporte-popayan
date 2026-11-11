@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     minHeight: 52,
   },
-  inputFocused: { backgroundColor: '#FBFEFD' },
+  inputFocused: { backgroundColor: '#FBFCFF' },
   icon: { marginRight: SPACING.sm },
   input: {
     flex: 1,

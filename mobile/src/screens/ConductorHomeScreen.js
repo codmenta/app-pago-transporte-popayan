@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import RouteBadge from '../components/RouteBadge';
 import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import { useAuth } from '../context/AuthContext';
 import * as storage from '../services/storage';
@@ -96,9 +97,8 @@ export default function ConductorHomeScreen() {
               </View>
               <View style={styles.flex}>
                 <Text style={styles.busName}>Bus #{turno.numero_interno}</Text>
-                <Text style={styles.busRoute}>
-                  {turno.ruta} · {turno.placa_bus}
-                </Text>
+                <Text style={styles.busRoute}>Placa {turno.placa_bus}</Text>
+                <RouteBadge ruta={turno.ruta} style={styles.routeBadge} />
               </View>
               <View style={styles.activePill}>
                 <View style={styles.activeDot} />
@@ -206,6 +206,7 @@ const styles = StyleSheet.create({
   },
   busName: { color: COLORS.surface, fontSize: FONT_SIZES.md, fontWeight: '700' },
   busRoute: { color: COLORS.onPrimaryMuted, fontSize: FONT_SIZES.sm },
+  routeBadge: { marginTop: 4 },
   activePill: {
     flexDirection: 'row',
     alignItems: 'center',

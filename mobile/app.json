@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
-    "backgroundColor": "#F4F7F6",
+    "backgroundColor": "#F4F6FB",
     "ios": {
       "supportsTablet": true
     },
@@ -14,7 +14,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png",
-        "backgroundColor": "#0F766E"
+        "backgroundColor": "#1E40AF"
       }
     },
     "web": {
@@ -23,8 +23,8 @@
       "shortName": "PopaPay",
       "description": "Paga tu pasaje de bus en Popayán desde el celular",
       "favicon": "./assets/images/favicon.png",
-      "themeColor": "#0F766E",
-      "backgroundColor": "#F4F7F6"
+      "themeColor": "#1E40AF",
+      "backgroundColor": "#F4F6FB"
     },
     "plugins": [
       [
@@ -41,7 +41,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 160,
           "resizeMode": "contain",
-          "backgroundColor": "#F4F7F6"
+          "backgroundColor": "#F4F6FB"
         }
       ],
       "expo-status-bar",

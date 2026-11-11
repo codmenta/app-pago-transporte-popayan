@@ -5,6 +5,7 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, View } from 're
 import AdminTabs from '../components/AdminTabs';
 import Button from '../components/Button';
 import Notice from '../components/Notice';
+import RouteBadge from '../components/RouteBadge';
 import TextField from '../components/TextField';
 import { COLORS, FONT_SIZES, RADIUS, SHADOW, SPACING } from '../constants/theme';
 import * as storage from '../services/storage';
@@ -144,7 +145,7 @@ export default function BusRegisterScreen() {
                 </View>
                 <View style={styles.busInfo}>
                   <Text style={styles.busName}>{b.placa}</Text>
-                  <Text style={styles.busRoute}>{b.ruta}</Text>
+                  <RouteBadge ruta={b.ruta} style={styles.routeBadge} />
                 </View>
                 <Button
                   small
@@ -234,5 +235,5 @@ const styles = StyleSheet.create({
   busNumber: { color: COLORS.primary, fontWeight: '800' },
   busInfo: { flex: 1 },
   busName: { fontSize: FONT_SIZES.sm, fontWeight: '700', color: COLORS.text },
-  busRoute: { fontSize: FONT_SIZES.xs, color: COLORS.textLight, marginTop: 2 },
+  routeBadge: { marginTop: 4 },
 });
